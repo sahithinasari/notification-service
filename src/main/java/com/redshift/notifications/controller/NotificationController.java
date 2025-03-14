@@ -30,8 +30,6 @@ public class NotificationController {
     public String sendNotificationViaRabbitMQ(@RequestBody Notification notification) {
         try {
             String json = objectMapper.writeValueAsString(notification);
-            System.out.println("Json "+json);
-            log.info("Json formaat",json);
             rabbitTemplate.convertAndSend("notification.queue", json);
         } catch (JsonProcessingException e) {
             e.printStackTrace();

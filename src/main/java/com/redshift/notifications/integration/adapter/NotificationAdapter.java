@@ -7,6 +7,7 @@ import jakarta.mail.SendFailedException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.integration.handler.advice.RequestHandlerRetryAdvice;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
@@ -17,65 +18,46 @@ import org.springframework.stereotype.Service;
 public class NotificationAdapter {
 
     private final EmailService emailService;
+    private final RequestHandlerRetryAdvice retryAdvice;
 
-    private static final int MAX_ATTEMPTS = 3; // Max retries before stopping
-    private static final int DELAY_BETWEEN_RETRIES_MS = 3000; // 3 seconds delay
+    @ServiceActivator(inputChannel = "orderPlacedChannel", adviceChain = "retryAdvice")
+    public void sendOrderPlacedNotification(Notification notification) throws MessagingException {
+        sendEmail(notification, "Order Placed Notification");
+    }
 
-    /**
-     * Sends an email with retry logic for recoverable errors.
-     */
-    private void sendEmailWithRetry(Notification notification, String subject) {
-        int attempt = 0;
+    @ServiceActivator(inputChannel = "orderShippedChannel", adviceChain = "retryAdvice")
+    public void sendOrderShippedNotification(Notification notification) throws MessagingException {
+        sendEmail(notification, "Order Shipped Notification");
+    }
 
-        while (attempt < MAX_ATTEMPTS) {
-            try {
-                log.info("Attempt {}/{}: Sending '{}' email to {}: {}", attempt + 1, MAX_ATTEMPTS, subject, notification.getRecipient(), notification.getMessage());
-                emailService.sendEmail(notification.getRecipient(), subject, notification.getMessage());
-                log.info("Email sent successfully!");
-                return; // Exit if successful
-            } catch (MailAuthenticationException e) {
-                handleAuthenticationFailure();
-                throw e; // Stop retrying if authentication fails
-            } catch (SendFailedException e) {
-                log.error("Invalid email address: {}. Not retrying further.", notification.getRecipient());
-                return; // Stop retrying if recipient is invalid
-            } catch (MessagingException | MailException e) {
-                log.error("Error sending email (attempt {}/{}): {}", attempt + 1, MAX_ATTEMPTS, e.getMessage());
-                attempt++;
+    @ServiceActivator(inputChannel = "defaultNotificationChannel", adviceChain = "retryAdvice")
+    public void defaultOrderHandle(Notification notification) throws MessagingException {
+        sendEmail(notification, "Order Processing Failed Notification");
+    }
 
-                if (attempt < MAX_ATTEMPTS) {
-                    try {
-                        Thread.sleep(DELAY_BETWEEN_RETRIES_MS); // Wait before retrying
-                    } catch (InterruptedException interruptedException) {
-                        Thread.currentThread().interrupt();
-                    }
-                } else {
-                    log.error("Max retries reached. Email to {} failed permanently.", notification.getRecipient());
-                }
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return email != null && email.matches(emailRegex);
+    }
+
+    private void sendEmail(Notification notification, String subject) throws MessagingException {
+        try {
+            if (!isValidEmail(notification.getRecipient())) {
+                log.warn("Invalid email format: {}. Skipping email.", notification.getRecipient());
+                return;
             }
+            log.info("Sending '{}' email to {}: {}", subject, notification.getRecipient(), notification.getMessage());
+            emailService.sendEmail(notification.getRecipient(), subject, notification.getMessage());
+            log.info("Email sent successfully!");
+        } catch (MailAuthenticationException e) {
+            log.error("SMTP authentication failed. Shutting down.");
+            System.exit(1); // Stop app on authentication failure
+        } catch (SendFailedException e) {
+            log.error("Invalid email: {}. Skipping retries.", notification.getRecipient());
+            return; // Prevents retry for invalid recipients
+        } catch (MessagingException | MailException e) {
+            log.error("Email send failed: {}", e.getMessage());
+            throw e; // Allows retry for temporary failures
         }
-    }
-
-    /**
-     * Handles SMTP authentication failures by shutting down after max retries.
-     */
-    private void handleAuthenticationFailure() {
-        log.error("SMTP authentication failed. Shutting down the application.");
-        System.exit(1);
-    }
-
-    @ServiceActivator(inputChannel = "orderPlacedChannel")
-    public void sendOrderPlacedNotification(Notification notification) {
-        sendEmailWithRetry(notification, "Order Placed Notification");
-    }
-
-    @ServiceActivator(inputChannel = "orderShippedChannel")
-    public void sendOrderShippedNotification(Notification notification) {
-        sendEmailWithRetry(notification, "Order Shipped Notification");
-    }
-
-    @ServiceActivator(inputChannel = "defaultNotificationChannel")
-    public void defaultOrderHandle(Notification notification) {
-        sendEmailWithRetry(notification, "Order Processing Failed Notification");
     }
 }
