@@ -22,9 +22,9 @@ public class MailConfig {
         mailSender.setHost(mailProperties.getHost());
         mailSender.setPort(mailProperties.getPort());
         mailSender.setUsername(mailProperties.getUsername());
-        mailSender.setPassword(mailProperties.getPassword());
+        mailSender.setPassword("mschelhcquijpfbd");
         mailSender.setJavaMailProperties(mailProperties.toProperties());
-        System.out.println("Mail properties "+mailSender.getHost()+" "+mailProperties);
+        System.out.println("Mail properties "+mailSender.getHost()+" "+mailProperties.getUsername()+"Password "+mailProperties.getPassword());
         return mailSender;
     }
 
