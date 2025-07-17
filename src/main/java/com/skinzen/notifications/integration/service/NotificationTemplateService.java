@@ -15,9 +15,9 @@ public class NotificationTemplateService {
         // Simple switch-case or map for demo; can later use Thymeleaf templates
         System.out.println("Messagetype "+messageType);
         return switch (messageType.toUpperCase()) {
-            case "WELCOME" -> "Hello [[name]], welcome to Skinzen!";
-            case "PASSWORD_RESET" -> "Hi [[name]], use code [[otp]] to reset your password.";
-            default -> "Hello [[name]], this is a default notification.";
+            case "WELCOME" -> "Hello [[${name}]], welcome to Skinzen!";
+            case "PASSWORD_RESET" -> "Hi [[${name}]], use code [[${otp}]] to reset your password.";
+            default -> "Hello [[${name}]], this is a default notification.";
         };
     }
 }

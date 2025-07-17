@@ -67,13 +67,11 @@ public class NotificationIntegrationFlow {
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
-                    log.info("Dto "+dto);
                     return notificationMapper.mapToNotification(dto);
                 })
                 .transform(templateApplier(stringTemplateEngine()))
                 .handle(notificationDispatcher())
-                //.handle(logNotificationEvent()) // Uncomment if needed
-                .get(); // End the flow here
+                .get();
     }
 
     @Bean
@@ -96,9 +94,6 @@ public class NotificationIntegrationFlow {
     public MessageHandler notificationDispatcher() {
         return message -> {
             Notification notification = (Notification) message.getPayload();
-//            notification.setFormattedMessage(notification.getFormattedMessage() != null
-//                    ? notification.getFormattedMessage()
-//                    : "Hi Sahithi"); // Fallback to plain message if no template
             log.info("Dispatching notification: {}", notification);
             NotificationSender sender = notificationFactory.resolveSender(notification);
             sender.send(notification);
@@ -123,7 +118,7 @@ public class NotificationIntegrationFlow {
         SpringTemplateEngine engine = new SpringTemplateEngine();
 
         StringTemplateResolver resolver = new StringTemplateResolver();
-        resolver.setTemplateMode("HTML"); // or "TEXT"
+        resolver.setTemplateMode("TEXT"); // or "TEXT"
         resolver.setCacheable(false);     // Since it's dynamic
 
         engine.setTemplateResolver(resolver);
