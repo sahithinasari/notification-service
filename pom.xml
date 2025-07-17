@@ -11,7 +11,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.skinzen</groupId>
+	<groupId>com.redshift</groupId>
 	<artifactId>notification_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>notification_service</name>
@@ -50,18 +50,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-activemq</artifactId>
 		</dependency>
-		<!-- Spring Cloud Config -->
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
-			<version>4.1.1</version>
-		</dependency>
 
-		<!-- Spring Boot Actuator for Monitoring -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
 		<!-- ✅ Spring Integration -->
 		<dependency>
 			<groupId>org.springframework.integration</groupId>
@@ -89,7 +78,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version> <!-- Check for latest version if needed -->
+			<version>2.3.0</version>
 		</dependency>
 
 		<!-- ✅ Bean Validation (Fix for jakarta.validation.NoProviderFoundException) -->
@@ -104,7 +93,7 @@
 			<artifactId>spring-boot-starter-validation</artifactId>  <!-- ✅ Required for @Valid annotations -->
 		</dependency>
 
-		<!-- ✅ Lombok -->
+		<!-- ✅ Lombok (No changes) -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -119,9 +108,24 @@
 			<scope>test</scope>
 		</dependency>
 
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.cloud</groupId>-->
+<!--			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>-->
+<!--		</dependency>-->
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<groupId>org.springframework.integration</groupId>
+			<artifactId>spring-integration-sftp</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-integration</artifactId>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-thymeleaf -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			<version>3.5.3</version>
 		</dependency>
 
 	</dependencies>
