@@ -17,6 +17,7 @@ public class IntegrationChannel {
         return MessageChannels.direct().getObject();
     }
 
+
     // 🔹 Channels for different notification types
     @Bean
     public MessageChannel orderPlacedChannel() {

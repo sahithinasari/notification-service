@@ -2,7 +2,7 @@ package com.skinzen.notifications.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.skinzen.notifications.model.Notification;
+import com.skinzen.notifications.dto.NotificationRequestDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.core.JmsTemplate;
@@ -19,7 +19,7 @@ public class NotificationProducer {
     @Autowired
     private ObjectMapper objectMapper;
 
-    public void sendNotification(Notification notification) {
+    public void sendNotification(NotificationRequestDto notification) {
         try {
             String json = objectMapper.writeValueAsString(notification);
             jmsTemplate.convertAndSend(QUEUE_NAME, json);

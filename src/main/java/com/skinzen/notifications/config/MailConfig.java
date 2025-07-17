@@ -1,12 +1,14 @@
 package com.skinzen.notifications.config;
 
 import com.skinzen.notifications.util.MailProperties;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
+@Slf4j
 public class MailConfig {
 
 
@@ -24,7 +26,7 @@ public class MailConfig {
         mailSender.setUsername(mailProperties.getUsername());
         mailSender.setPassword(mailProperties.getPassword());
         mailSender.setJavaMailProperties(mailProperties.toProperties());
-        System.out.println("Mail properties "+mailSender.getHost()+" "+mailProperties);
+        log.info("Mail properties "+mailSender.getHost()+" "+mailProperties);
         return mailSender;
     }
 
