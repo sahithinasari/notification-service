@@ -11,8 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.GenericTransformer;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.integration.dsl.IntegrationFlow;
 import org.thymeleaf.TemplateEngine;
@@ -40,6 +42,18 @@ public class NotificationIntegrationFlow {
         this.objectMapper = objectMapper;
     }
 
+    // STEP 2: Global Error Handling Flow
+    @Bean
+    public IntegrationFlow errorHandlingFlow() {
+        return IntegrationFlow
+                .from("errorChannel")
+                .handle(message -> {
+                    Throwable error = (Throwable) message.getPayload();
+                    log.error("Global Integration error: {}", error.getMessage(), error);
+                    // TODO: Optionally: Send to dead-letter queue, alert, audit, etc.
+                })
+                .get();
+    }
     @Bean
     public IntegrationFlow notificationFlow() {
         return IntegrationFlow

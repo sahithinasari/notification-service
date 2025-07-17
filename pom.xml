@@ -78,7 +78,7 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-			<version>2.3.0</version> <!-- Check for latest version if needed -->
+			<version>2.3.0</version>
 		</dependency>
 
 		<!-- ✅ Bean Validation (Fix for jakarta.validation.NoProviderFoundException) -->

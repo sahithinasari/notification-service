@@ -49,10 +49,10 @@ public class RabbitMqInboundConfig {
         adapter.setErrorChannel(errorChannel());
         return adapter;
     }
-
     @Bean
     public MessageChannel errorChannel() {
-        return new DirectChannel();
+        return new PublishSubscribeChannel();
     }
 
 }
+
