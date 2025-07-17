@@ -1,4 +1,4 @@
-package com.redshift.notifications;
+package com.skinzen.notifications;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

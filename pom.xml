@@ -11,7 +11,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.redshift</groupId>
+	<groupId>com.skinzen</groupId>
 	<artifactId>notification_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>notification_service</name>
