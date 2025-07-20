@@ -1,4 +1,4 @@
-package com.skinzen.notifications.connections;
+package com.skinzen.notifications.config;
 
 import com.skinzen.notifications.util.ActiveMQProperties;
 import jakarta.jms.ConnectionFactory;

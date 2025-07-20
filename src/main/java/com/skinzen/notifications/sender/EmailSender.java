@@ -1,4 +1,4 @@
-package com.skinzen.notifications.integration.sender;
+package com.skinzen.notifications.sender;
 
 import com.skinzen.notifications.dto.Notification;
 import jakarta.mail.MessagingException;

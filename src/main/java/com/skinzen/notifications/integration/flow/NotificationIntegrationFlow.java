@@ -4,19 +4,25 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skinzen.notifications.dto.Notification;
 import com.skinzen.notifications.dto.NotificationRequestDto;
-import com.skinzen.notifications.integration.sender.NotificationSender;
-import com.skinzen.notifications.integration.service.NotificationFactory;
+import com.skinzen.notifications.integration.handler.NotificationDispatcher;
 import com.skinzen.notifications.mapper.NotificationMapper;
+import com.skinzen.notifications.sender.NotificationSender;
+import com.skinzen.notifications.service.NotificationFactory;
+import org.aopalliance.aop.Advice;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.integration.channel.PublishSubscribeChannel;
 import org.springframework.integration.core.GenericTransformer;
+import org.springframework.integration.handler.advice.ErrorMessageSendingRecoverer;
+import org.springframework.integration.handler.advice.RequestHandlerRetryAdvice;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
 import org.springframework.integration.dsl.IntegrationFlow;
+import org.springframework.retry.support.RetryTemplate;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
@@ -27,17 +33,12 @@ import org.thymeleaf.templateresolver.StringTemplateResolver;
 public class NotificationIntegrationFlow {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationIntegrationFlow.class);
-
-  //  private final TemplateEngine templateEngine;
-    private final NotificationFactory notificationFactory;
     private final NotificationMapper notificationMapper;
     private final ObjectMapper objectMapper;
 
-    public NotificationIntegrationFlow(NotificationFactory notificationFactory,
+    public NotificationIntegrationFlow(
                                        NotificationMapper notificationMapper,
                                        ObjectMapper objectMapper) {
-       // this.templateEngine = templateEngine;
-        this.notificationFactory = notificationFactory;
         this.notificationMapper = notificationMapper;
         this.objectMapper = objectMapper;
     }
@@ -55,7 +56,7 @@ public class NotificationIntegrationFlow {
                 .get();
     }
     @Bean
-    public IntegrationFlow notificationFlow() {
+    public IntegrationFlow notificationFlow(NotificationDispatcher dispatcher) {
         return IntegrationFlow
                 .from("combinedInputChannel")
                 .transform(Message.class, message -> {
@@ -70,7 +71,8 @@ public class NotificationIntegrationFlow {
                     return notificationMapper.mapToNotification(dto);
                 })
                 .transform(templateApplier(stringTemplateEngine()))
-                .handle(notificationDispatcher())
+                .handle(dispatcher, "dispatch")
+
                 .get();
     }
 
@@ -85,18 +87,6 @@ public class NotificationIntegrationFlow {
 
             notification.setFormattedMessage(rendered);
             return notification;
-        };
-    }
-
-
-
-    @Bean
-    public MessageHandler notificationDispatcher() {
-        return message -> {
-            Notification notification = (Notification) message.getPayload();
-            log.info("Dispatching notification: {}", notification);
-            NotificationSender sender = notificationFactory.resolveSender(notification);
-            sender.send(notification);
         };
     }
 

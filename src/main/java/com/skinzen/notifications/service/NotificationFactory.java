@@ -1,8 +1,8 @@
-package com.skinzen.notifications.integration.service;
+package com.skinzen.notifications.service;
 
 import com.skinzen.notifications.dto.Notification;
-import com.skinzen.notifications.integration.sender.EmailSender;
-import com.skinzen.notifications.integration.sender.NotificationSender;
+import com.skinzen.notifications.sender.EmailSender;
+import com.skinzen.notifications.sender.NotificationSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
