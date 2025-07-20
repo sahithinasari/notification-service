@@ -3,7 +3,7 @@ package com.skinzen.notifications.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.skinzen.notifications.dto.NotificationRequestDto;
-import com.skinzen.notifications.service.NotificationProducer;
+import com.skinzen.notifications.messaging.NotificationProducer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;

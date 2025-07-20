@@ -29,7 +29,6 @@ public class JmsInboundConfig {
         DefaultMessageListenerContainer container = new DefaultMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setDestinationName("notificationQueue");
-        System.out.println("Interval"+activeMQProperties.getRetryInterval()+" "+activeMQProperties.getRetryInterval());
         FixedBackOff backOff = new FixedBackOff(activeMQProperties.getRetryInterval(),activeMQProperties.getMaxAttempts()); // Retry every 5s, max 3 attempts
         container.setBackOff(backOff);
         return container;

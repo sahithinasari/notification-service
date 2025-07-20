@@ -1,4 +1,4 @@
-package com.skinzen.notifications.integration.service;
+package com.skinzen.notifications.service;
 
 import org.springframework.stereotype.Service;
 

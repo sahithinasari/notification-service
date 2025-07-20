@@ -6,7 +6,7 @@ import com.skinzen.notifications.enums.NotificationType;
 import com.skinzen.notifications.exceptions.ApiError;
 import com.skinzen.notifications.exceptions.notification.InvalidNotificationTypeException;
 import com.skinzen.notifications.exceptions.notification.NotificationExceptionHandler;
-import com.skinzen.notifications.integration.service.NotificationTemplateService;
+import com.skinzen.notifications.service.NotificationTemplateService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
