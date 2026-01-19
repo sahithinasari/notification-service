@@ -84,12 +84,21 @@ Prevents duplicates across retries, crashes, and restarts
 
 ---
 ## Running Locally (with Docker)
-1. Build the JAR:
+1. Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+EMAIL_USERNAME=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+SPRING_PROFILES_ACTIVE=default
+```
+2. Build the JAR:
 ```
 mvn clean package -DskipTests
 ```
 
-2. Build & Start Containers:
+3. Build & Start Containers:
 ```
 docker-compose up -d --build
 ```
@@ -118,6 +127,18 @@ Request payload:
   "params": {
     "orderId": "ORD1001",
     "amount": "1999"
+  }
+}
+```
+```
+{
+  "userId": "U1001",
+  "eventType": "OTP",
+  "channels": ["EMAIL"],
+  "recipient": "priyamvadhanasari@gmail.com",
+  "params": {
+    "otp": "483921",
+    "expiresIn": "120"
   }
 }
 ```
