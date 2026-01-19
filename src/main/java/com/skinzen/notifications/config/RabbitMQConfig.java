@@ -1,43 +1,125 @@
 package com.skinzen.notifications.config;
 
-import com.skinzen.notifications.util.RabbitMQProperties;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import static com.skinzen.notifications.constants.RabbitMQConstants.*;
 
 @Configuration
 public class RabbitMQConfig {
 
-    private final RabbitMQProperties rabbitMQProperties;
 
-    public RabbitMQConfig(RabbitMQProperties rabbitMQProperties) {
-        this.rabbitMQProperties = rabbitMQProperties;
+    // =========================================================
+    // Exchanges
+    // =========================================================
+
+    @Bean
+    public TopicExchange notificationExchange() {
+        return new TopicExchange(EVENTS_EXCHANGE, true, false);
     }
 
     @Bean
-    public ConnectionFactory rabbitConnectionFactory() {
-        CachingConnectionFactory factory = new CachingConnectionFactory(rabbitMQProperties.getHost(), rabbitMQProperties.getPort());
-        factory.setUsername(rabbitMQProperties.getUsername());
-        factory.setPassword(rabbitMQProperties.getPassword());
-        return factory;
+    public DirectExchange retryExchange() {
+        return new DirectExchange(RETRY_EXCHANGE, true, false);
     }
 
     @Bean
-    public Queue queue() {
-        return new Queue(rabbitMQProperties.getQueue(), true);
+    public DirectExchange dlqExchange() {
+        return new DirectExchange(DLX, true, false);
     }
 
+    // =========================================================
+    // EMAIL QUEUES
+    // =========================================================
 
-    //    @Bean
-//    public DirectExchange exchange() {
-//        // Declare an exchange
-//        return new DirectExchange(rabbitMQProperties.getExchange());
-//    }
-//    @Bean
-//    public Binding binding(Queue queue, DirectExchange exchange) {
-//        // Bind the queue to the exchange with a routing key
-//        return BindingBuilder.bind(queue).to(exchange).with(rabbitMQProperties.getRoutingKey());
-//    }
+    @Bean
+    public Queue emailQueue() {
+        return QueueBuilder.durable(EMAIL_QUEUE)
+                .withArgument("x-dead-letter-exchange", RETRY_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", "email.retry")
+                .build();
+    }
+
+    @Bean
+    public Binding emailBinding() {
+        return BindingBuilder.bind(emailQueue())
+                .to(notificationExchange())
+                .with("notification.*.email");
+    }
+
+    @Bean
+    public Queue emailRetryQueue() {
+        return QueueBuilder.durable(EMAIL_RETRY_QUEUE)
+                .withArgument("x-message-ttl", 10000)
+                .withArgument("x-dead-letter-exchange", EVENTS_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", "notification.retry.email")
+                .build();
+    }
+
+    @Bean
+    public Binding emailRetryBinding() {
+        return BindingBuilder.bind(emailRetryQueue())
+                .to(retryExchange())
+                .with("email.retry");
+    }
+
+    @Bean
+    public Queue emailDLQ() {
+        return QueueBuilder.durable(EMAIL_DLQ).build();
+    }
+
+    @Bean
+    public Binding emailDLQBinding() {
+        return BindingBuilder.bind(emailDLQ())
+                .to(dlqExchange())
+                .with("email.dlq");
+    }
+
+    // =========================================================
+    // SMS QUEUES
+    // =========================================================
+
+    @Bean
+    public Queue smsQueue() {
+        return QueueBuilder.durable(SMS_QUEUE)
+                .withArgument("x-dead-letter-exchange", RETRY_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", "sms.retry")
+                .build();
+    }
+
+    @Bean
+    public Binding smsBinding() {
+        return BindingBuilder.bind(smsQueue())
+                .to(notificationExchange())
+                .with("notification.*.sms");
+    }
+
+    @Bean
+    public Queue smsRetryQueue() {
+        return QueueBuilder.durable(SMS_RETRY_QUEUE)
+                .withArgument("x-message-ttl", 5000)
+                .withArgument("x-dead-letter-exchange", EVENTS_EXCHANGE)
+                .withArgument("x-dead-letter-routing-key", "notification.retry.sms")
+                .build();
+    }
+
+    @Bean
+    public Binding smsRetryBinding() {
+        return BindingBuilder.bind(smsRetryQueue())
+                .to(retryExchange())
+                .with("sms.retry");
+    }
+
+    @Bean
+    public Queue smsDLQ() {
+        return QueueBuilder.durable(SMS_DLQ).build();
+    }
+
+    @Bean
+    public Binding smsDLQBinding() {
+        return BindingBuilder.bind(smsDLQ())
+                .to(dlqExchange())
+                .with("sms.dlq");
+    }
 }

@@ -1,18 +1,10 @@
 # Notification Service
 
-A **Spring Boot 3** microservice that handles **email notifications** (welcome emails, password resets, promotions, etc.) using **RabbitMQ for message queuing** and **Thymeleaf-based templates**.  
-The service is fully **containerized with Docker** and ready to run locally or in production.
+A production-grade, event-driven Notification Service built with Spring Boot 3 and RabbitMQ, 
+supporting notifications through Email with retry handling, DLQ, and Redis-based idempotency.
+The service is designed for scalability, fault tolerance, and exactly-once delivery semantics at the business level.
 
 ---
-
-## Features
-- **RabbitMQ-based messaging** for async notification dispatch.
-- **Email sending via Gmail SMTP** (configurable via `.env`).
-- **Thymeleaf-based dynamic templates** for easy customization.
-- **Swagger UI** for API testing (`/swagger-ui.html`).
-- **Docker & Docker Compose** for running the app and RabbitMQ.
----
-
 ## Prerequisites
 - **Java 17**
 - **Maven 3.8+**
@@ -20,75 +12,118 @@ The service is fully **containerized with Docker** and ready to run locally or i
 - A **Gmail App Password** (for sending emails)
 
 ---
+## Features
+- Asynchronous notification processing using RabbitMQ
+- Email-channel delivery
+- Topic exchange–based routing for event + channel fan-out
+- Retry handling for transient failures (Spring Retry)
+- Dead Letter Queues (DLQ) for permanent failures
+- Redis-based idempotency to prevent duplicate notifications
+- Template-based email rendering using Thymeleaf
+- OTP notification support
+- Swagger UI for API testing
+---
+## High-Level Architecture
+```
+Client
+  |
+  | POST /api/notifications
+  v
+Notification API
+  |
+  | Generate notificationId
+  | Publish events
+  v
+RabbitMQ (Topic Exchange)
+  |
+  +--> email.queue  --> Email Worker  --> email.dlq.queue
+```
+## Core Design Principles
+### Event-Driven & Asynchronous
+- API responds immediately (202 ACCEPTED)
+- Notification delivery happens asynchronously via RabbitMQ
+### Channel Isolation
+- Email, SMS, and Push are processed independently
+- Failure in one channel does not affect others
+### At-Least-Once Delivery + Idempotency
+- RabbitMQ guarantees at-least-once delivery
+- Redis idempotency ensures exactly-once delivery at the business level
 
-## Environment Variables
+### RabbitMQ Design
+Exchange
+- Type: Topic
+- Name: notification.events.exchange
 
-Create a `.env` file in the root directory:
-
-```env
-EMAIL_USERNAME=your-email@gmail.com
-EMAIL_PASSWORD=your-app-password 
+Routing Key Pattern
+```
+notification.<eventType>.<channel>
 ```
 
-SPRING_PROFILES_ACTIVE=default
-⚠️ Do not commit .env to GitHub!
-Add it to .gitignore to keep credentials safe.
+Examples:
+```
+notification.order_placed.email
+```
+### Idempotency (Redis)
 
-Running Locally (with Docker)
+RabbitMQ provides at-least-once delivery, which can lead to duplicate processing.
+
+Idempotency Key
+```
+notification:{notificationId}:{channel}
+```
+Example:
+```
+notification:abc123:EMAIL
+```
+Implementation
+```
+Redis SETNX (setIfAbsent)
+TTL: 24 hours
+```
+Prevents duplicates across retries, crashes, and restarts
+
+---
+## Running Locally (with Docker)
 1. Build the JAR:
+```
 mvn clean package -DskipTests
+```
 
 2. Build & Start Containers:
+```
 docker-compose up -d --build
-This will:
-Start RabbitMQ (with management UI at http://localhost:15672 — user guest/guest)
+```
+- RabbitMQ UI: http://localhost:15672
+(guest / guest)
+- Application: http://localhost:2024
+- Swagger UI: http://localhost:2024/swagger-ui.html
 
-Build and run the notification-service container on port 2024.
-
-API Endpoints
+### API Endpoints
 Once running, visit:
 
 Swagger UI: http://localhost:2024/swagger-ui.html
 
 Sample Endpoints:
+```
+POST /api/notifications
+```
+Request payload:
 
-POST /api/notifications/send – Send a notification.
-
-GET /api/notifications/templates/{type} – Fetch an email template.
-
-Example request:
-
-POST /api/notifications/send
 ```
 {
-  "recipient": "user@example.com",
-  "type": "WELCOME",
-  "variables": {
-    "name": "John"
+  "userId": "U123",
+  "eventType": "ORDER_PLACED",
+  "channels": ["EMAIL"],
+  "recipient": "priyamvadhanasari@gmail.com",
+  "params": {
+    "orderId": "ORD1001",
+    "amount": "1999"
   }
 }
 ```
 
-Testing RabbitMQ
-You can test by publishing a message manually via RabbitMQ:
-
-Access RabbitMQ UI at http://localhost:15672 (user: guest, pass: guest).
-
-Create a queue named notification.queue if not already present.
-
-Publish a test message:
-```
-{
-  "recipient": "test@example.com",
-  "type": "WELCOME",
-  "variables": {
-    "name": "Tester"
-  }
-}
-
-```
-Running Without Docker
-If you have RabbitMQ installed locally:
+## Running Without Docker
+If you have RabbitMQ installed locally
 Start RabbitMQ:
 rabbitmq-server
 Run the Spring Boot app directly:

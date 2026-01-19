@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<p>Hi <b th:text="${name}">User</b>,</p>
+
+<p>
+    Your order <b th:text="${orderId}">ORD_ID</b> has been placed successfully.
+</p>
+
+<p>
+    Amount: ₹<span th:text="${amount}">0</span>
+</p>
+
+<p>Thanks,<br/>Skinzen Team</p>
+
+</body>
+</html>

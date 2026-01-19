@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<p>Hi <b th:text="${name}">User</b>,</p>
+<p>
+    Your OTP is <span th:text="${otp}">otp</span>. It is valid for <span th:text="${expiresIn}">expiresIn</span> seconds.
+</p>
+
+<p>Thanks,<br/>Skinzen Team</p>
+
+</body>
+</html>
