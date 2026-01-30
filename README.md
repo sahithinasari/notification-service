@@ -142,7 +142,11 @@ Request payload:
   }
 }
 ```
+Stopping the Containers
 
+```
+docker-compose down
+```
 ## Running Without Docker
 If you have RabbitMQ installed locally
 Start RabbitMQ:
@@ -154,11 +158,7 @@ mvn spring-boot:run
 
 The app will be available on http://localhost:2024.
 
-Stopping the Containers
 
-```
-docker-compose down
-```
 
 ---
 
