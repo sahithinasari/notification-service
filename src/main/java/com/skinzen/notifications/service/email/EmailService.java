@@ -19,15 +19,14 @@ public class EmailService {
 
         String htmlBody = templateService.render(request);
 
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper =
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper =
                     new MimeMessageHelper(message, true, "UTF-8");
 
-            helper.setTo(request.getRecipient());
-            helper.setSubject(subjectFor(request.getEventType().name()));
-            helper.setText(htmlBody, true);
-
-            mailSender.send(message);
+        helper.setTo(request.getRecipient());
+        helper.setSubject(subjectFor(request.getEventType().name()));
+        helper.setText(htmlBody, true);
+        mailSender.send(message);
 
     }
 
