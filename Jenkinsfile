@@ -25,7 +25,7 @@ pipeline {
         stage('Stop Existing Stack') {
             steps {
                 sh '''
-                  docker compose down || true
+                  docker-compose down || true
                 '''
             }
         }
@@ -33,7 +33,7 @@ pipeline {
         stage('Start Stack') {
             steps {
                 sh '''
-                  docker compose up -d --build
+                  docker-compose up -d --build
                 '''
             }
         }
