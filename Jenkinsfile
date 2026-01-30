@@ -17,7 +17,7 @@ pipeline {
             steps {
                 sh '''
                   chmod +x mvnw || true
-                  ./mvnw clean test package
+                  ./mvnw clean package
                 '''
             }
         }
